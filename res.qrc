@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/text-plain.png</file>
+        <file>res/folder.png</file>
+        <file>res/buttons/stop.svg</file>
+        <file>res/buttons/previous.svg</file>
+        <file>res/buttons/play.svg</file>
+        <file>res/buttons/pause.svg</file>
+        <file>res/buttons/next.svg</file>
+        <file>res/buttons/sound_on.svg</file>
+        <file>res/buttons/sound_off.svg</file>
+        <file>res/buttons/random_order.svg</file>
+        <file>res/buttons/simple_order.svg</file>
+        <file>res/buttons/new.svg</file>
+        <file>res/search.png</file>
+    </qresource>
+</RCC>
