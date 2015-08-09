@@ -77,6 +77,7 @@ private slots:
     void onTabBarContextMenu(const QPoint& pos);
     void onTreeViewContexttMenu(const QPoint& pos);
     void onPlayQueueContexttMenu(const QPoint& pos);
+
 private:
     Ui::MainWindow *ui;
 

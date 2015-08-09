@@ -9,6 +9,7 @@
 #include <QtXml>
 #include <ctime>
 #include <stdlib.h>
+#include <new>
 
 #define VERSION "1.0.27"
 
@@ -586,32 +587,32 @@ void MainWindow::savePlayLists()
     int tab_count = m_tw_play_lists->count();
     for(int i = 0; i < tab_count; i++)
     {
-        try
+//        try
+//        {
+        m_current_file_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(i));
+        m_current_tree_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
+
+        QDomDocument document;
+        QDomElement root = document.createElement("Playlist");
+        root.setAttribute("name", m_tw_play_lists->tabText(i));
+        document.appendChild(root);
+
+        Save::rek(m_current_tree_model->getRootItem(), root, document);
+
+        QFile xml_file(ini_path + QString("playlist_%1.xml").arg(i));
+        if(xml_file.open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            m_current_file_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(i));
-            m_current_tree_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
-
-            QDomDocument document;
-            QDomElement root = document.createElement("Playlist");
-            root.setAttribute("name", m_tw_play_lists->tabText(i));
-            document.appendChild(root);
-
-            Save::rek(m_current_tree_model->getRootItem(), root, document);
-
-            QFile xml_file(ini_path + QString("playlist_%1.xml").arg(i));
-            if(xml_file.open(QIODevice::WriteOnly | QIODevice::Text))
-            {
-                QTextStream stream(&xml_file);
-                stream << document.toString(4);
-                xml_file.close();
-            }
-
+            QTextStream stream(&xml_file);
+            stream << document.toString(4);
+            xml_file.close();
         }
-        catch (const std::bad_cast& e)
-        {
-            m_current_file_tree = nullptr;
-            m_current_tree_model = nullptr;
-        }
+
+//        }
+//        catch (const std::bad_cast& e)
+//        {
+//            m_current_file_tree = nullptr;
+//            m_current_tree_model = nullptr;
+//        }
     }
 }
 
@@ -738,17 +739,17 @@ void MainWindow::loadPlayLists()
         m_current_tree_model = tm;
     }
 
-    try
-    {
-        m_current_file_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(0));
-        m_current_tree_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
+//    try
+//    {
+    m_current_file_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(0));
+    m_current_tree_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
 
-    }
-    catch (const std::bad_cast& e)
-    {
-        m_current_file_tree = nullptr;
-        m_current_tree_model = nullptr;
-    }
+//    }
+//    catch (const std::bad_cast& e)
+//    {
+//        m_current_file_tree = nullptr;
+//        m_current_tree_model = nullptr;
+//    }
 }
 
 void MainWindow::setShortcuts()
@@ -977,17 +978,17 @@ void MainWindow::onSliderRelease()
 void MainWindow::onCurrentTabChanged(int index)
 {
     if(index == -1) return;
-    try
-    {
+//    try
+//    {
         m_current_file_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(index));
         m_current_tree_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
         m_current_play_file = m_current_tree_model->getCurrentItem();
-    }
-    catch (const std::bad_cast& e)
-    {
-        m_current_file_tree = nullptr;
-        m_current_tree_model = nullptr;
-    }
+//    }
+//    catch (const std::bad_cast& e)
+//    {
+//        m_current_file_tree = nullptr;
+//        m_current_tree_model = nullptr;
+//    }
 }
 
 void MainWindow::onAddPlayListClicked()
@@ -1234,55 +1235,55 @@ void MainWindow::onTabBarContextMenu(const QPoint &pos)
     }
     else if(choose == delete_tab)
     {
-        try
-        {
-            MyTreeView* tmp_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
-            MyTreeModel* tmp_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
-            if(tmp_tree == m_current_file_tree)
-            {
-                m_current_file_tree = nullptr;
-                m_current_tree_model = nullptr;
-            }
-            m_tw_play_lists->removeTab(current_index);
-
-        }
-        catch (const std::bad_cast& e)
+//        try
+//        {
+        MyTreeView* tmp_tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
+        MyTreeModel* tmp_model = dynamic_cast<MyTreeModel*>(m_current_file_tree->model());
+        if(tmp_tree == m_current_file_tree)
         {
             m_current_file_tree = nullptr;
             m_current_tree_model = nullptr;
         }
+        m_tw_play_lists->removeTab(current_index);
+
+//        }
+//        catch (const std::bad_cast& e)
+//        {
+//            m_current_file_tree = nullptr;
+//            m_current_tree_model = nullptr;
+//        }
     }
     else if(choose == clear_tab)
     {
-        try
-        {
-            MyTreeView* tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
-            MyTreeModel* model = dynamic_cast<MyTreeModel*>(tree->model());
-            if(model == m_current_tree_model)
-                setCurrentFile(nullptr);
+//        try
+//        {
+        MyTreeView* tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
+        MyTreeModel* model = dynamic_cast<MyTreeModel*>(tree->model());
+        if(model == m_current_tree_model)
+            setCurrentFile(nullptr);
 
-            model->deleteChildren();
-        }
-        catch (const std::bad_cast& e)
-        {
-            m_current_file_tree = nullptr;
-            m_current_tree_model = nullptr;
-        }
+        model->deleteChildren();
+//        }
+//        catch (const std::bad_cast& e)
+//        {
+//            m_current_file_tree = nullptr;
+//            m_current_tree_model = nullptr;
+//        }
     }
     else if(choose == delete_invalid_and_empty)
     {
-        try
-        {
-            MyTreeView* tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
-            MyTreeModel* model = dynamic_cast<MyTreeModel*>(tree->model());
-            model->removeAllRowsWithValue(4, false);
+//        try
+//        {
+        MyTreeView* tree = dynamic_cast<MyTreeView*>(m_tw_play_lists->widget(current_index));
+        MyTreeModel* model = dynamic_cast<MyTreeModel*>(tree->model());
+        model->removeAllRowsWithValue(4, false);
 
-        }
-        catch (const std::bad_cast& e)
-        {
-            m_current_file_tree = nullptr;
-            m_current_tree_model = nullptr;
-        }
+//        }
+//        catch (const std::bad_cast& e)
+//        {
+//            m_current_file_tree = nullptr;
+//            m_current_tree_model = nullptr;
+//        }
     }
 }
 

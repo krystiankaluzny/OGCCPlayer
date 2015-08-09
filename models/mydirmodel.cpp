@@ -200,7 +200,8 @@ TreeItem *MyDirModel::insertNewTree(int position, QString &path, const QModelInd
 {
     TreeItem* tree;
 
-    beginInsertRows(parent, position, position);
+    int modelPosition = position == -1 ? 0 : position;
+    beginInsertRows(parent, modelPosition, modelPosition);
     if(create_audio)
         tree = createAudioMediaTree(position, path, getItem(parent));
     else
