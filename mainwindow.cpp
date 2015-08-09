@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_dir_model(nullptr),
     m_current_tree_model(nullptr),
-    m_music_base_path("/media/Inne/Muzyka"),
+    m_music_base_path(""),
     m_current_play_file(nullptr),
     m_is_playing(false),
     m_moved_slider(false),
@@ -43,7 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_order(Order::Random),
     m_is_mute(false),
     m_tree_column_count(3),
-    m_continue_playing(false)
+    m_continue_playing(false),
+    m_current_file_name(nullptr)
 {
     ui->setupUi(this);
 
@@ -491,12 +492,19 @@ void MainWindow::setCurrentFile(TreeItem *item, bool play_queue) //item musi odw
 
     if(m_successfully_initialized)
     {
-        if(m_current_stream_handle != 0)
+        if(m_current_file_name != nullptr)
         {
-            onStopButton();
-            BASS_StreamFree(m_current_stream_handle);
+            delete m_current_file_name;
+            m_current_file_name = nullptr;
         }
-        m_current_stream_handle = BASS_StreamCreateFile(FALSE, m_current_play_file->data(0).toString().toStdString().c_str(), 0, 0, 0); //PROBLEM z WAV
+
+        QString file_name = m_current_play_file->data(0).toString();
+        int length = file_name.size();
+        m_current_file_name = new wchar_t[length + 1];
+        file_name.toWCharArray(m_current_file_name);
+        m_current_file_name[length] = '\0';
+
+        m_current_stream_handle = BASS_StreamCreateFile(FALSE, m_current_file_name, 0, 0, 0); //PROBLEM z WAV
         //BASS_StreamCreateFile(stream from memory, path, offset, length (0 = all), flags)
         if(!m_current_stream_handle)
         {
@@ -574,9 +582,6 @@ void MainWindow::savePlayLists()
         }
     };
 
-    QList<MyTreeModel*>::iterator iter;
-
-    int i = 0;
     QDir dir(ini_path);
     dir.mkdir(ini_path);//tworzymy jeśli nie było
     foreach (QFileInfo file, dir.entryInfoList(QDir::Files | QDir::NoDot | QDir::NoDotDot, QDir::Name))

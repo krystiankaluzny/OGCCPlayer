@@ -312,7 +312,13 @@ TreeItem *createAudioMediaTree(int position, const QString &dir, TreeItem *paren
 
             if(exists)
             {
-                HSTREAM str = BASS_StreamCreateFile(FALSE, tree->data(0).toString().toStdString().c_str(), 0, 0, 0);
+                QString file_name = tree->data(0).toString();
+                int length = file_name.size();
+                wchar_t* w_file_name = new wchar_t[length + 1];
+                file_name.toWCharArray(w_file_name);
+                w_file_name[length] = '\0';
+
+                HSTREAM str = BASS_StreamCreateFile(FALSE, w_file_name, 0, 0, 0);
                 if(str)
                 {
                     QWORD length = BASS_ChannelGetLength(str, BASS_POS_BYTE);
@@ -322,6 +328,7 @@ TreeItem *createAudioMediaTree(int position, const QString &dir, TreeItem *paren
                         parent->setData(2, QVariant(static_cast<unsigned long long>(parent->data(2).toULongLong() + duration * 1000)));
                     BASS_StreamFree(str);
                 }
+                delete w_file_name;
             }
             return tree;
         }

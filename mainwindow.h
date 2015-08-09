@@ -115,7 +115,7 @@ private:
     bool m_is_mute;
     float m_volume_level; // 0.0 - 1.0
     double m_duration; // w sekundach
-
+    wchar_t* m_current_file_name;
     Order m_order;
 
     QTimer* m_update_track_position;
