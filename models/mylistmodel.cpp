@@ -3,6 +3,7 @@
 
 #include <QMimeData>
 #include <QItemSelectionModel>
+#include <QDataStream>
 #include <QUrl>
 #include <QList>
 #include <QDebug>

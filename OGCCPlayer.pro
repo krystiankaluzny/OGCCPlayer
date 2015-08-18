@@ -38,9 +38,12 @@ CONFIG += qwt
 RESOURCES += \
     res.qrc
 
-#LIBS += -bass
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
 
-INCLUDEPATH += E:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24/c
-DEPENDPATH += E:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24/c
+LIBS += -L/usr/local/lib/bass24 -lbass
 
-LIBS += -LE:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24 -lbass
+#INCLUDEPATH += E:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24/c
+#DEPENDPATH += E:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24/c
+
+#LIBS += -LE:/Dropbox/MyApps/QtCreator/build-OGCCPlayer-Desktop_Qt_5_4_2_MinGW_32bit-Debug/bass24 -lbass
