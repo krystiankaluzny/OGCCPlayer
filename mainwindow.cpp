@@ -15,6 +15,7 @@
 
 /*
  * TODO
+ * music base w konfigu
  * menu kontekstowe pliku
  * *
  * menu kontekstowe playlisty
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_dir_model(nullptr),
     m_current_tree_model(nullptr),
-    m_music_base_path(""),
+    m_music_base_path("/media/Inne/Muzyka/"),
     m_current_play_file(nullptr),
     m_is_playing(false),
     m_moved_slider(false),
@@ -169,6 +170,12 @@ MainWindow::~MainWindow()
     {
         m_search_dialog->close();
         delete m_search_dialog;
+    }
+
+    if(m_current_file_name != nullptr)
+    {
+        delete m_current_file_name;
+        m_current_file_name = nullptr;
     }
 
     delete m_play_queue_model;
@@ -498,6 +505,10 @@ void MainWindow::setCurrentFile(TreeItem *item, bool play_queue) //item musi odw
             m_current_file_name = nullptr;
         }
 
+        #ifdef Q_OS_LINUX
+        m_current_stream_handle = BASS_StreamCreateFile(FALSE, m_current_play_file->data(0).toString().toStdString().c_str(), 0, 0, 0); //PROBLEM z WAV
+        #endif
+        #ifdef Q_OS_WIN32
         QString file_name = m_current_play_file->data(0).toString();
         int length = file_name.size();
         m_current_file_name = new wchar_t[length + 1];
@@ -505,6 +516,8 @@ void MainWindow::setCurrentFile(TreeItem *item, bool play_queue) //item musi odw
         m_current_file_name[length] = '\0';
 
         m_current_stream_handle = BASS_StreamCreateFile(FALSE, m_current_file_name, 0, 0, 0); //PROBLEM z WAV
+        #endif
+
         //BASS_StreamCreateFile(stream from memory, path, offset, length (0 = all), flags)
         if(!m_current_stream_handle)
         {
@@ -548,7 +561,7 @@ void MainWindow::savePlayLists()
     #ifdef Q_OS_WIN32
     QString ini_path(QCoreApplication::applicationDirPath());
     #endif
-    ini_path += "/Obywatel GCC/OGCCPlayer/";
+    ini_path += "/ObywatelGCC/OGCCPlayer/";
 
     class Save
     {
@@ -630,7 +643,7 @@ void MainWindow::loadPlayLists()
     #ifdef Q_OS_WIN32
     QString ini_path(QCoreApplication::applicationDirPath());
     #endif
-    ini_path += "/Obywatel GCC/OGCCPlayer/";
+    ini_path += "/ObywatelGCC/OGCCPlayer/";
 
     QDir dir(ini_path);
     dir.mkdir(ini_path);//tworzymy jeśli nie było
@@ -669,7 +682,18 @@ void MainWindow::loadPlayLists()
 
                     if(exists && success)
                     {
+                        #ifdef Q_OS_LINUX
                         HSTREAM str = BASS_StreamCreateFile(FALSE, nowy->data(0).toString().toStdString().c_str(), 0, 0, 0);
+                        #endif
+                        #ifdef Q_OS_WIN32
+                        QString file_name = m_current_play_file->data(0).toString();
+                        int length = file_name.size();
+                        wchar_t* tmp_current_file_name = new wchar_t[length + 1];
+                        file_name.toWCharArray(tmp_current_file_name);
+                        m_current_file_name[length] = '\0';
+
+                        HSTREAM str = BASS_StreamCreateFile(FALSE, tmp_current_file_name, 0, 0, 0); //PROBLEM z WAV
+                        #endif
                         if(str)
                         {
                             QWORD length = BASS_ChannelGetLength(str, BASS_POS_BYTE);
@@ -678,6 +702,9 @@ void MainWindow::loadPlayLists()
                             parent->setData(2, parent->data(2).toULongLong() + duration * 1000);
                             BASS_StreamFree(str);
                         }
+                        #ifdef Q_OS_WIN32
+                        delete tmp_current_file_name;
+                        #endif
                     }
                 }
             }
