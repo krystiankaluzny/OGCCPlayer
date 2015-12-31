@@ -131,6 +131,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // initialize BASS
     m_successfully_initialized = BASS_Init(-1,44100,0, NULL,NULL);  //BASS_Init(device(-1=default, sample rate, flags, parent window, Class to initialize DirectSound (NULL = default));
 
+
+    loadAppConfig();
+
+
     m_le_music_base_path->setText(m_music_base_path);
 
     setDirModel();
@@ -164,6 +168,7 @@ MainWindow::~MainWindow()
     onStopButton();
     BASS_Free();
 
+    saveAppConfig();
     savePlayLists();
 
     if(m_search_dialog != nullptr)
@@ -552,7 +557,7 @@ void MainWindow::setTimeCounterAndDuration(qint64 pos, qint64 duration)
     m_l_time_count_duration->setText(txt);
 }
 
-void MainWindow::savePlayLists()
+void MainWindow::saveAppConfig()
 {
     #ifdef Q_OS_LINUX
     QString ini_path(getenv("HOME"));
@@ -562,6 +567,72 @@ void MainWindow::savePlayLists()
     QString ini_path(QCoreApplication::applicationDirPath());
     #endif
     ini_path += "/ObywatelGCC/OGCCPlayer/";
+
+    QDir dir(ini_path);
+    dir.mkdir(ini_path);//tworzymy jeśli nie było
+
+    QDomDocument document;
+    QDomElement root = document.createElement("Config");
+    document.appendChild(root);
+
+    QDomElement node = document.createElement("MusicBasePath");
+    node.setAttribute("absolut_path", m_music_base_path);
+    root.appendChild(node);
+
+    QFile xml_file(ini_path + "config.xml");
+    if(xml_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QTextStream stream(&xml_file);
+        stream << document.toString(4);
+        xml_file.close();
+    }
+}
+
+void MainWindow::loadAppConfig()
+{
+    #ifdef Q_OS_LINUX
+    QString ini_path(getenv("HOME"));
+    ini_path += "/.config";
+    #endif
+    #ifdef Q_OS_WIN32
+    QString ini_path(QCoreApplication::applicationDirPath());
+    #endif
+    ini_path += "/ObywatelGCC/OGCCPlayer/";
+
+    QDir dir(ini_path);
+    dir.mkdir(ini_path);//tworzymy jeśli nie było
+
+    QDomDocument document;
+
+    QFile file(ini_path + "config.xml");
+
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        if(document.setContent(&file))
+        {
+            file.close();
+
+            QDomNode root = document.firstChild();
+            QDomElement element = root.firstChildElement("MusicBasePath");
+            m_music_base_path = element.attribute("absolut_path", m_music_base_path);
+        }
+        else
+        {
+            file.close();
+        }
+    }
+}
+
+void MainWindow::savePlayLists()
+{
+    #ifdef Q_OS_LINUX
+    QString ini_path(getenv("HOME"));
+    ini_path += "/.config";
+    #endif
+    #ifdef Q_OS_WIN32
+    QString ini_path(QCoreApplication::applicationDirPath());
+    #endif
+    ini_path += "/ObywatelGCC/OGCCPlayer/playlists/";
 
     class Save
     {
@@ -643,7 +714,7 @@ void MainWindow::loadPlayLists()
     #ifdef Q_OS_WIN32
     QString ini_path(QCoreApplication::applicationDirPath());
     #endif
-    ini_path += "/ObywatelGCC/OGCCPlayer/";
+    ini_path += "/ObywatelGCC/OGCCPlayer/playlists/";
 
     QDir dir(ini_path);
     dir.mkdir(ini_path);//tworzymy jeśli nie było
@@ -664,12 +735,12 @@ void MainWindow::loadPlayLists()
                 {
                     QVector<QVariant> data;
                     data << e.attribute("absolut_path") << e.attribute("file_name") << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0, 0)) << QVariant("") << QVariant(true);
-                    TreeItem* nowy = new TreeItem(data, true, parent);
-                    parent->insertChild(-1, nowy);
+                    TreeItem* newItem = new TreeItem(data, true, parent);
+                    parent->insertChild(-1, newItem);
 
-                    rek(nowy, node, success);
+                    rek(newItem, node, success);
 
-                    parent->setData(2, parent->data(2).toULongLong() + nowy->data(2).toULongLong());
+                    parent->setData(2, parent->data(2).toULongLong() + newItem->data(2).toULongLong());
                 }
                 else if(e.tagName() == "file")
                 {
@@ -677,13 +748,13 @@ void MainWindow::loadPlayLists()
                     bool exists = info.exists();
                     QVector<QVariant> data;
                     data << e.attribute("absolut_path") << e.attribute("file_name") << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0, 0)) << QVariant(e.attribute("playback_count").toInt()) << QVariant(exists);
-                    TreeItem* nowy = new TreeItem(data, false, parent);
-                    parent->insertChild(-1, nowy);
+                    TreeItem* newItem = new TreeItem(data, false, parent);
+                    parent->insertChild(-1, newItem);
 
                     if(exists && success)
                     {
                         #ifdef Q_OS_LINUX
-                        HSTREAM str = BASS_StreamCreateFile(FALSE, nowy->data(0).toString().toStdString().c_str(), 0, 0, 0);
+                        HSTREAM str = BASS_StreamCreateFile(FALSE, newItem->data(0).toString().toStdString().c_str(), 0, 0, 0);
                         #endif
                         #ifdef Q_OS_WIN32
                         QString file_name = m_current_play_file->data(0).toString();
@@ -698,7 +769,7 @@ void MainWindow::loadPlayLists()
                         {
                             QWORD length = BASS_ChannelGetLength(str, BASS_POS_BYTE);
                             double duration = BASS_ChannelBytes2Seconds(str, length);
-                            nowy->setData(2, duration * 1000);
+                            newItem->setData(2, duration * 1000);
                             parent->setData(2, parent->data(2).toULongLong() + duration * 1000);
                             BASS_StreamFree(str);
                         }
@@ -745,6 +816,10 @@ void MainWindow::loadPlayLists()
                 tv->setModel(tm);
                 tv->setColumnWidth(0, 400);
                 m_tw_play_lists->insertTab(i++, tv, root.toElement().attribute("name"));
+            }
+            else
+            {
+                file.close();
             }
         }
     }

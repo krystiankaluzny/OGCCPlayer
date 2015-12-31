@@ -43,6 +43,8 @@ private:
     bool getPreviousFile();
     void setCurrentFile(TreeItem* item, bool play_queue = false);
     void setTimeCounterAndDuration(qint64 pos, qint64 duration);
+    void saveAppConfig();
+    void loadAppConfig();
     void savePlayLists();
     void loadPlayLists();
     void setShortcuts();
