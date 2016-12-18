@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <QDebug>
 #include <functional>
+#include <cmath>
 
 MyTreeModel::MyTreeModel(const QStringList &headers, QStringList data, int column_count, QObject *parent)
     : MyDirModel(headers, data, column_count, parent),
