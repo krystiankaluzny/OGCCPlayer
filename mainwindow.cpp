@@ -600,7 +600,7 @@ void MainWindow::loadAppConfig()
     ini_path += "/ObywatelGCC/OGCCPlayer/";
 
     QDir dir(ini_path);
-    dir.mkdir(ini_path);//tworzymy jeśli nie było
+    bool created = dir.mkpath(ini_path);//tworzymy jeśli nie było
 
     QDomDocument document;
 
