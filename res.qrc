@@ -13,5 +13,6 @@
         <file>res/buttons/simple_order.svg</file>
         <file>res/buttons/new.svg</file>
         <file>res/search.png</file>
+        <file>res/icon.png</file>
     </qresource>
 </RCC>

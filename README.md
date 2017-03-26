@@ -21,6 +21,7 @@ OGCCPlayer was written in Qt 4.8 and [bass](http://www.un4seen.com/) library.
 2. Copy bass.h to /usr/local/include/
 3. Create /usr/local/lib/bass24 directory
 4. Copy libbass.so to /usr/local/lib/bass24
+5. Run `sudo ldconfig -v  /usr/local/lib/bass24/`
 
 ## FAQ
 
